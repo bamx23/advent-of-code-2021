@@ -166,6 +166,91 @@ func task03_2(_ input: TaskInput) {
     print("T03_2: \(o2) * \(co2) = \(o2 * co2)")
 }
 
+// MARK: - Day 04
+
+extension TaskInput {
+    func task04() -> ([Int], [[[Int]]]) {
+        let lines = readInput("04").split(separator: "\n")
+        let nums = lines.first!.split(separator: ",").compactMap { Int($0) }
+        var boards = [[[Int]]]()
+        for b_idx in 0..<((lines.count - 1) / 5) {
+            boards.append(
+                lines[(1 + b_idx * 5)..<(1 + (b_idx + 1) * 5)]
+                    .map { l in l.split(separator: " ").compactMap { Int($0) } }
+            )
+        }
+        return (nums, boards)
+    }
+}
+
+func task04_1(_ input: TaskInput) {
+    var (nums, boards) = input.task04()
+
+    var (bestIdx, bestSum, bestNum) = (Int.max, 0, 0)
+
+//    print("\(boards)")
+
+    for b in boards.indices {
+        var cols = [Int](repeating: 0, count: 5)
+        var rows = [Int](repeating: 0, count: 5)
+        for (idx, num) in nums.enumerated() {
+            if idx > bestIdx { break }
+            for y in 0..<5 {
+                for x in 0..<5 {
+                    if boards[b][y][x] == num {
+                        cols[x] += 1
+                        rows[y] += 1
+                        boards[b][y][x] *= -1
+                    }
+                }
+            }
+            if cols.contains(5) || rows.contains(5) {
+                let sum = boards[b].map { r in r.filter({ $0 > 0 }).reduce(0, +) }.reduce(0, +)
+                bestIdx = idx
+                bestNum = num
+                bestSum = sum
+//                print("\(b) \(idx) \(num) \(sum)")
+            }
+        }
+    }
+    print("T04_1: \(bestSum) * \(bestNum) = \(bestNum * bestSum)")
+}
+
+func task04_2(_ input: TaskInput) {
+    var (nums, boards) = input.task04()
+
+    var (bestIdx, bestSum, bestNum) = (0, 0, 0)
+
+//    print("\(boards)")
+
+    for b in boards.indices {
+        var cols = [Int](repeating: 0, count: 5)
+        var rows = [Int](repeating: 0, count: 5)
+        for (idx, num) in nums.enumerated() {
+            for y in 0..<5 {
+                for x in 0..<5 {
+                    if boards[b][y][x] == num {
+                        cols[x] += 1
+                        rows[y] += 1
+                        boards[b][y][x] *= -1
+                    }
+                }
+            }
+            if cols.contains(5) || rows.contains(5) {
+//                print("\(b) \(idx) \(num)")
+                if idx < bestIdx { break }
+                let sum = boards[b].map { r in r.filter({ $0 > 0 }).reduce(0, +) }.reduce(0, +)
+                bestIdx = idx
+                bestNum = num
+                bestSum = sum
+                break
+//                print("\(b) \(idx) \(num) \(sum)")
+            }
+        }
+    }
+    print("T04_2: \(bestSum) * \(bestNum) = \(bestNum * bestSum)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -175,12 +260,15 @@ let inputs = [
 
 for input in inputs {
     print("Run for \(input.prefix)")
-    task01_1(input)
-    task01_2(input)
+//    task01_1(input)
+//    task01_2(input)
+//
+//    task02_1(input)
+//    task02_2(input)
+//
+//    task03_1(input)
+//    task03_2(input)
 
-    task02_1(input)
-    task02_2(input)
-
-    task03_1(input)
-    task03_2(input)
+    task04_1(input)
+    task04_2(input)
 }
