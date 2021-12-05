@@ -251,6 +251,75 @@ func task04_2(_ input: TaskInput) {
     print("T04_2: \(bestSum) * \(bestNum) = \(bestNum * bestSum)")
 }
 
+// MARK: - Day 05
+
+extension TaskInput {
+    struct Point {
+        var x: Int
+        var y: Int
+    }
+    func task05() -> [(Point, Point)] {
+        readInput("05")
+            .split(separator: "\n")
+            .map { l -> (Point, Point) in
+                let pair = l.split(separator: ">")
+                let aa = pair[0].dropLast(2).split(separator: ",").map { Int($0)! }
+                let bb = pair[1].dropFirst().split(separator: ",").map { Int($0)! }
+                return (.init(x: aa[0], y: aa[1]), .init(x: bb[0], y: bb[1]))
+            }
+    }
+}
+
+func task05_1(_ input: TaskInput) {
+    let lines = input.task05()
+    let size = 1000
+    var field = [[Int]](repeating: [Int](repeating: 0, count: size), count: size)
+    for (a, b) in lines {
+        if a.y == b.y {
+            for x in min(a.x, b.x)...max(a.x, b.x) {
+                field[a.y][x] += 1
+            }
+        } else if a.x == b.x {
+            for y in min(a.y, b.y)...max(a.y, b.y) {
+                field[y][a.x] += 1
+            }
+        }
+    }
+    let count = field.map { l in l.map { $0 >= 2 ? 1 : 0 }.reduce(0, +) }.reduce(0, +)
+//    for y in 0..<10 {
+//        print(field[y][..<10].map { "\($0)" }.joined())
+//    }
+    print("T05_1: \(count)")
+}
+
+func task05_2(_ input: TaskInput) {
+    let lines = input.task05()
+    let size = 1000
+    var field = [[Int]](repeating: [Int](repeating: 0, count: size), count: size)
+    for (a, b) in lines {
+        if a.y == b.y {
+            for x in min(a.x, b.x)...max(a.x, b.x) {
+                field[a.y][x] += 1
+            }
+        } else if a.x == b.x {
+            for y in min(a.y, b.y)...max(a.y, b.y) {
+                field[y][a.x] += 1
+            }
+        } else if abs(a.x - b.x) == abs(a.y - b.y) {
+            let dx = (b.x - a.x)/abs(b.x - a.x)
+            let dy = (b.y - a.y)/abs(b.y - a.y)
+            for idx in 0...abs(b.x - a.x) {
+                field[a.y + dy * idx][a.x + dx * idx] += 1
+            }
+        }
+    }
+    let count = field.map { l in l.map { $0 >= 2 ? 1 : 0 }.reduce(0, +) }.reduce(0, +)
+//    for y in 0..<10 {
+//        print(field[y][..<10].map { $0 > 0 ? "\($0)" : "." }.joined())
+//    }
+    print("T05_2: \(count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -268,7 +337,10 @@ for input in inputs {
 //
 //    task03_1(input)
 //    task03_2(input)
+//
+//    task04_1(input)
+//    task04_2(input)
 
-    task04_1(input)
-    task04_2(input)
+    task05_1(input)
+    task05_2(input)
 }
