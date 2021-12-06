@@ -350,21 +350,21 @@ func task06_1(_ input: TaskInput) {
 func task06_2(_ input: TaskInput) {
     let fishes = input.task06()
     let days = 256
-    var data = [[Int]](repeating: [Int](repeating: -1, count: 10), count: days + 1)
+    var cache = [[Int]](repeating: [Int](repeating: -1, count: 10), count: days + 1)
 
-    func count(fish: Int, days: Int, data: inout [[Int]]) -> Int {
-        if data[days][fish] != -1 { return data[days][fish] }
+    func count(fish: Int, days: Int) -> Int {
+        if cache[days][fish] != -1 { return cache[days][fish] }
         var total = 1
         var daysLeft = days - fish
         while daysLeft > 0 {
-            total += count(fish: 9, days: daysLeft, data: &data)
+            total += count(fish: 9, days: daysLeft)
             daysLeft -= 7
         }
-        data[days][fish] = total
+        cache[days][fish] = total
         return total
     }
 
-    let count = fishes.map { count(fish: $0, days: days, data: &data) }.reduce(0, +)
+    let count = fishes.map { count(fish: $0, days: days) }.reduce(0, +)
     print("T06_2: \(count)")
 }
 
