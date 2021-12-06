@@ -320,6 +320,54 @@ func task05_2(_ input: TaskInput) {
     print("T05_2: \(count)")
 }
 
+// MARK: - Day 06
+
+extension TaskInput {
+    func task06() -> [Int] {
+        readInput("06")
+            .split(separator: "\n")
+            .first!
+            .split(separator: ",")
+            .map { Int($0)! }
+    }
+}
+
+func task06_1(_ input: TaskInput) {
+    var fishes = input.task06()
+    for _ in 0..<80 {
+        let count = fishes.count
+        for idx in 0..<count {
+            fishes[idx] -= 1
+            if fishes[idx] < 0 {
+                fishes[idx] = 6
+                fishes.append(8)
+            }
+        }
+    }
+    print("T06_1: \(fishes.count)")
+}
+
+func task06_2(_ input: TaskInput) {
+    let fishes = input.task06()
+    let days = 256
+    var data = [[Int]](repeating: [Int](repeating: -1, count: 10), count: days + 1)
+
+    func count(fish: Int, days: Int, data: inout [[Int]]) -> Int {
+        if data[days][fish] != -1 { return data[days][fish] }
+        var total = 1
+        var daysLeft = days - fish
+        while daysLeft > 0 {
+            total += count(fish: 9, days: daysLeft, data: &data)
+            daysLeft -= 7
+        }
+        data[days][fish] = total
+        return total
+    }
+
+    let count = fishes.map { count(fish: $0, days: days, data: &data) }.reduce(0, +)
+    print("T06_2: \(count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -340,7 +388,10 @@ for input in inputs {
 //
 //    task04_1(input)
 //    task04_2(input)
+//
+//    task05_1(input)
+//    task05_2(input)
 
-    task05_1(input)
-    task05_2(input)
+    task06_1(input)
+    task06_2(input)
 }
