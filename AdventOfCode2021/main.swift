@@ -368,6 +368,43 @@ func task06_2(_ input: TaskInput) {
     print("T06_2: \(count)")
 }
 
+// MARK: - Day 07
+
+extension TaskInput {
+    func task07() -> [Int] {
+        readInput("07")
+            .split(separator: "\n")
+            .first!
+            .split(separator: ",")
+            .map { Int($0)! }
+    }
+}
+
+func task07_1(_ input: TaskInput) {
+    let crabs = input.task07()
+//    let mean = crabs.reduce(0, +) / crabs.count
+    var minFuel = Int.max
+    for pos in crabs.min()!...crabs.max()! { //(mean-1)...(mean+1) {
+        minFuel = min(minFuel, crabs.map{ abs($0 - pos) }.reduce(0, +))
+    }
+    print("T07_1: \(minFuel)")
+}
+
+func task07_2(_ input: TaskInput) {
+    let crabs = input.task07()
+
+    var cache = [Int](repeating: 0, count: crabs.max()! - crabs.min()! + 1)
+    for idx in 1..<cache.count {
+        cache[idx] = cache[idx - 1] + idx
+    }
+
+    var minFuel = Int.max
+    for pos in crabs.min()!...crabs.max()! { //(mean-1)...(mean+1) {
+        minFuel = min(minFuel, crabs.map{ cache[abs($0 - pos)] }.reduce(0, +))
+    }
+    print("T07_2: \(minFuel)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -391,7 +428,10 @@ for input in inputs {
 //
 //    task05_1(input)
 //    task05_2(input)
+//
+//    task06_1(input)
+//    task06_2(input)
 
-    task06_1(input)
-    task06_2(input)
+    task07_1(input)
+    task07_2(input)
 }
