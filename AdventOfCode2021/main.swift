@@ -405,6 +405,86 @@ func task07_2(_ input: TaskInput) {
     print("T07_2: \(minFuel)")
 }
 
+// MARK: - Day 08
+
+let asciA = "a".first!.asciiValue!
+
+extension TaskInput {
+    private func toSignals<T: StringProtocol>(_ str: T) -> [Set<Int>] {
+        str
+            .split(separator: " ")
+            .map { v in Set(v.map { Int($0.asciiValue! - asciA) }) }
+    }
+
+    func task08() -> [(Set<Set<Int>>, [Set<Int>])] {
+        readInput("08")
+            .split(separator: "\n")
+            .map { line -> (Set<Set<Int>>, [Set<Int>]) in
+                let pair = line.split(separator: "|")
+                let signals = Set(toSignals(pair[0]))
+                let digits = toSignals(pair[1])
+                return (signals, digits)
+            }
+    }
+}
+
+func task08_1(_ input: TaskInput) {
+    let lines = input.task08()
+    let count = lines.map(\.1).flatMap { $0 }.filter { [2,3,4,7].contains($0.count) }.count
+    print("T08_1: \(count)")
+}
+
+func task08_2(_ input: TaskInput) {
+    let lines = input.task08()
+
+    let digitMapping = [
+        0: "abcefg",
+        1: "cf",
+        2: "acdeg",
+        3: "acdfg",
+        4: "bcdf",
+        5: "abdfg",
+        6: "abdefg",
+        7: "acf",
+        8: "abcdefg",
+        9: "abcdfg",
+    ].mapValues { v in v.map { Int($0.asciiValue! - asciA) } }
+    let allChars = Set<Int>(digitMapping.flatMap({ $0.value }))
+    let revMapping = Dictionary(uniqueKeysWithValues: digitMapping.map { ($1, $0) })
+
+    func bf(signals: Set<Set<Int>>, map: inout [Int], leftChars: inout Set<Int>) -> [Set<Int>: Int]? {
+        guard map.count == 7 else {
+            for ch in leftChars.map { $0 } {
+                map.append(ch)
+                leftChars.remove(ch)
+                if let result = bf(signals: signals, map: &map, leftChars: &leftChars) {
+                    return result
+                }
+                leftChars.insert(ch)
+                map.removeLast()
+            }
+            return nil
+        }
+
+        let mapping = digitMapping.mapValues { v in Set(v.map { map[$0] }) }
+        if Set(mapping.values) == signals {
+            return Dictionary(uniqueKeysWithValues: mapping.map { ($1, $0) })
+        } else {
+            return nil
+        }
+    }
+
+    let sum = lines.map { (signals, digits) in
+        var map = [Int]()
+        var leftChars = Set(allChars)
+        let mapping = bf(signals: signals, map: &map, leftChars: &leftChars)
+        let val = digits.map { mapping![$0]! }.reduce(0, { $0 * 10 + $1 })
+        return val
+    }.reduce(0, +)
+
+    print("T08_2: \(sum)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -431,7 +511,10 @@ for input in inputs {
 //
 //    task06_1(input)
 //    task06_2(input)
+//
+//    task07_1(input)
+//    task07_2(input)
 
-    task07_1(input)
-    task07_2(input)
+    task08_1(input)
+    task08_2(input)
 }
