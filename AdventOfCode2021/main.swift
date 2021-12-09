@@ -485,6 +485,107 @@ func task08_2(_ input: TaskInput) {
     print("T08_2: \(sum)")
 }
 
+// MARK: - Day 09
+
+extension TaskInput {
+    func task09() -> [[Int]] {
+        readInput("09")
+            .split(separator: "\n")
+            .map { l in l.map { Int(String($0))! } }
+    }
+}
+
+public struct DSU {
+    private var parent: [Int] = []
+    private var sz: [Int] = []
+
+    public init(length: Int) {
+        let arange = (0..<length).map { $0 }
+        parent = arange
+        sz = arange
+    }
+
+    mutating public func findParent(of u: Int) -> Int {
+        var u = u
+        while parent[u] != u {
+            (u, parent[u]) = (parent[u], parent[parent[u]])
+        }
+        return u
+    }
+
+    mutating public func unionSets(_ u: Int, _ v: Int) {
+        var u = findParent(of: u)
+        var v = findParent(of: v)
+        guard u != v else { return }
+
+        if (sz[u] < sz[v]) {
+            (u, v) = (v, u)
+        }
+        parent[v] = u
+        sz[u] += sz[v]
+    }
+}
+
+func task09_1(_ input: TaskInput) {
+    let map = input.task09()
+    let (h, w) = (map.count, map.first!.count)
+
+    var total = 0
+    for y in 0..<h {
+        for x in 0..<w {
+            var isLowest = true
+            for (dy, dx) in [(0, 1), (0, -1), (1, 0), (-1, 0)] {
+                let (ny, nx) = (y + dy, x + dx)
+                guard 0 <= ny && ny < h && 0 <= nx && nx < w else { continue }
+                if map[ny][nx] <= map[y][x] {
+                    isLowest = false
+                    break
+                }
+            }
+            if isLowest {
+                total += (map[y][x] + 1)
+            }
+        }
+    }
+
+    print("T09_1: \(total)")
+}
+
+func task09_2(_ input: TaskInput) {
+    let map = input.task09()
+    let (h, w) = (map.count, map.first!.count)
+
+    var dsu = DSU(length: h * w)
+    for y in 0..<h {
+        for x in 0..<w {
+            guard map[y][x] != 9 else { continue }
+            for (dy, dx) in [(0, -1), (-1, 0)] {
+                let (ny, nx) = (y + dy, x + dx)
+                guard 0 <= ny && ny < h && 0 <= nx && nx < w else { continue }
+                guard map[ny][nx] != 9 else { continue }
+                dsu.unionSets(y * w + x, ny * w + nx)
+            }
+        }
+    }
+
+    var sizes: [Int: Int] = [:]
+    for y in 0..<h {
+//        var line = [Int]()
+        for x in 0..<w {
+            let p = dsu.findParent(of: y * w + x)
+//            line.append(p)
+            guard map[y][x] != 9 else { continue }
+            sizes[p, default: 0] += 1
+        }
+//        print(line.map { String(format: "%02d", $0) }.joined(separator: " "))
+    }
+
+    let greaterSizes = sizes.values.sorted().reversed()[0..<3]
+    let total = greaterSizes.reduce(1, *)
+
+    print("T09_2: \(greaterSizes) -> \(total)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -514,7 +615,10 @@ for input in inputs {
 //
 //    task07_1(input)
 //    task07_2(input)
+//
+//    task08_1(input)
+//    task08_2(input)
 
-    task08_1(input)
-    task08_2(input)
+    task09_1(input)
+    task09_2(input)
 }
