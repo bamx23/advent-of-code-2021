@@ -450,11 +450,10 @@ func task08_2(_ input: TaskInput) {
         9: "abcdfg",
     ].mapValues { v in v.map { Int($0.asciiValue! - asciA) } }
     let allChars = Set<Int>(digitMapping.flatMap({ $0.value }))
-    let revMapping = Dictionary(uniqueKeysWithValues: digitMapping.map { ($1, $0) })
 
     func bf(signals: Set<Set<Int>>, map: inout [Int], leftChars: inout Set<Int>) -> [Set<Int>: Int]? {
         guard map.count == 7 else {
-            for ch in leftChars.map { $0 } {
+            for ch in leftChars.map({$0}) {
                 map.append(ch)
                 leftChars.remove(ch)
                 if let result = bf(signals: signals, map: &map, leftChars: &leftChars) {
