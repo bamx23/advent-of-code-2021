@@ -585,6 +585,88 @@ func task09_2(_ input: TaskInput) {
     print("T09_2: \(greaterSizes) -> \(total)")
 }
 
+// MARK: - Day 10
+
+extension TaskInput {
+    func task10() -> [[Character]] {
+        readInput("10")
+            .split(separator: "\n")
+            .map([Character].init)
+    }
+}
+
+enum T10 {
+    static let closers: [Character: Character] = [
+        "{": "}",
+        "[": "]",
+        "(": ")",
+        "<": ">",
+    ]
+    static let score: [Character: Int] = [
+        ")": 3,
+        "]": 57,
+        "}": 1197,
+        ">": 25137,
+    ]
+    static let cScore: [Character: Int] = [
+        ")": 1,
+        "]": 2,
+        "}": 3,
+        ">": 4,
+    ]
+}
+
+func task10_1(_ input: TaskInput) {
+    let lines = input.task10()
+    var total = 0
+    for line in lines {
+        var stack = [Character]()
+        var done = false
+        for ch in line {
+            switch ch {
+            case "{", "[", "(", "<":
+                stack.append(ch)
+            default:
+                if stack.isEmpty || T10.closers[stack.removeLast()]! != ch {
+                    total += T10.score[ch]!
+                    done = true
+                    break
+                }
+            }
+            if done { break }
+        }
+    }
+    print("T10_1: \(total)")
+}
+
+func task10_2(_ input: TaskInput) {
+    let lines = input.task10()
+    var totals = [Int]()
+    for line in lines {
+        var stack = [Character]()
+        var done = false
+        for ch in line {
+            switch ch {
+            case "{", "[", "(", "<":
+                stack.append(ch)
+            default:
+                if stack.isEmpty || T10.closers[stack.removeLast()]! != ch {
+                    done = true
+                    break
+                }
+            }
+            if done { break }
+        }
+        if done { continue }
+        totals.append(
+            stack.reversed().map { T10.cScore[T10.closers[$0]!]! }.reduce(0, { $0 * 5 + $1 })
+        )
+    }
+    totals.sort()
+    let mid = totals[totals.count / 2]
+    print("T10_2: \(mid)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -617,7 +699,10 @@ for input in inputs {
 //
 //    task08_1(input)
 //    task08_2(input)
+//
+//    task09_1(input)
+//    task09_2(input)
 
-    task09_1(input)
-    task09_2(input)
+    task10_1(input)
+    task10_2(input)
 }
