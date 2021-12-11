@@ -667,6 +667,94 @@ func task10_2(_ input: TaskInput) {
     print("T10_2: \(mid)")
 }
 
+// MARK: - Day 11
+
+extension TaskInput {
+    func task11() -> [[Int]] {
+        readInput("11")
+            .split(separator: "\n")
+            .map { l in l.map { Int(String($0))! } }
+    }
+}
+
+func task11_1(_ input: TaskInput) {
+    var map = input.task11()
+    let (h, w) = (map.count, map.first!.count)
+    var total = 0
+    let steps = 100
+    for _ in 0..<steps {
+        var flashes = [(Int, Int)]()
+        for y in 0..<h {
+            for x in 0..<w {
+                map[y][x] += 1
+                guard map[y][x] == 10 else { continue }
+                flashes.append((x, y))
+            }
+        }
+        while flashes.isEmpty == false {
+            let (x, y) = flashes.removeLast()
+            total += 1
+            for dy in -1...1 {
+                for dx in -1...1 {
+                    let (nx, ny) = (x + dx, y + dy)
+                    guard 0 <= nx && nx < w && 0 <= ny && ny < h && (dx != 0 || dy != 0) else { continue }
+                    map[ny][nx] += 1
+                    guard map[ny][nx] == 10 else { continue }
+                    flashes.append((nx, ny))
+                }
+            }
+        }
+        for y in 0..<h {
+            for x in 0..<w {
+                guard map[y][x] >= 10 else { continue }
+                map[y][x] = 0
+            }
+        }
+    }
+    print("T11_1: \(total)")
+}
+
+func task11_2(_ input: TaskInput) {
+    var map = input.task11()
+    let (h, w) = (map.count, map.first!.count)
+    var step = 0
+    while true {
+        step += 1
+        var flashes = [(Int, Int)]()
+        for y in 0..<h {
+            for x in 0..<w {
+                map[y][x] += 1
+                guard map[y][x] == 10 else { continue }
+                flashes.append((x, y))
+            }
+        }
+        while flashes.isEmpty == false {
+            let (x, y) = flashes.removeLast()
+            for dy in -1...1 {
+                for dx in -1...1 {
+                    let (nx, ny) = (x + dx, y + dy)
+                    guard 0 <= nx && nx < w && 0 <= ny && ny < h && (dx != 0 || dy != 0) else { continue }
+                    map[ny][nx] += 1
+                    guard map[ny][nx] == 10 else { continue }
+                    flashes.append((nx, ny))
+                }
+            }
+        }
+        var isFinal = true
+        for y in 0..<h {
+            for x in 0..<w {
+                guard map[y][x] >= 10 else {
+                    isFinal = false
+                    continue
+                }
+                map[y][x] = 0
+            }
+        }
+        if isFinal { break }
+    }
+    print("T11_2: \(step)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -702,7 +790,10 @@ for input in inputs {
 //
 //    task09_1(input)
 //    task09_2(input)
+//
+//    task10_1(input)
+//    task10_2(input)
 
-    task10_1(input)
-    task10_2(input)
+    task11_1(input)
+    task11_2(input)
 }
