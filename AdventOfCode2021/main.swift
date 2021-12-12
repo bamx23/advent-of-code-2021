@@ -755,6 +755,100 @@ func task11_2(_ input: TaskInput) {
     print("T11_2: \(step)")
 }
 
+// MARK: - Day 12
+
+extension TaskInput {
+    func task12() -> [(String, String)] {
+        readInput("12")
+            .split(separator: "\n")
+            .map { (String($0.split(separator: "-")[0]), String($0.split(separator: "-")[1])) }
+    }
+}
+
+func task12_1(_ input: TaskInput) {
+    let pairs = input.task12()
+    let nbs = Dictionary(grouping: pairs + pairs.map { ($0.1, $0.0) }, by: { $0.0 }).mapValues { $0.map(\.1) }
+
+    var paths = Set<[String]>()
+    var path = [String]()
+    var visited = Dictionary(uniqueKeysWithValues: nbs.keys.map { ($0, 0) })
+
+    func dfs(node: String) {
+        guard let nnbs = nbs[node], (node != node.lowercased() || visited[node]! == 0) else { return }
+        visited[node, default: 0] += 1
+
+        for n in nnbs {
+            guard n != "start" else { continue }
+            guard n != "end" else {
+                paths.insert(path)
+                continue
+            }
+            path.append(n)
+            dfs(node: n)
+            path.removeLast()
+        }
+
+        visited[node, default: 0] -= 1
+    }
+
+    dfs(node: "start")
+//    print(paths.map{ $0.joined(separator: ",")}.sorted().joined(separator: "\n"))
+
+    print("T12_1: \(paths.count)")
+}
+
+func task12_2(_ input: TaskInput) {
+    let pairs = input.task12()
+    let nbs = Dictionary(grouping: pairs + pairs.map { ($0.1, $0.0) }, by: { $0.0 }).mapValues { $0.map(\.1) }
+
+    var paths = Set<[String]>()
+    var path = [String]()
+    var visited = Dictionary(uniqueKeysWithValues: nbs.keys.map { ($0, 0) })
+    var extraNode: String?
+
+    func dfs(node: String) {
+        guard let nnbs = nbs[node],
+              (node != node.lowercased() || visited[node]! == 0 || (node == extraNode && visited[node]! == 1))
+        else { return }
+        visited[node, default: 0] += 1
+
+        for n in nnbs {
+            guard n != "start" else { continue }
+            guard n != "end" else {
+                paths.insert(path)
+                continue
+            }
+            path.append(n)
+            dfs(node: n)
+            path.removeLast()
+        }
+
+        if node == node.lowercased() && extraNode == nil {
+            extraNode = node
+
+            for n in nnbs {
+                guard n != "start" else { continue }
+                guard n != "end" else {
+                    paths.insert(path)
+                    continue
+                }
+                path.append(n)
+                dfs(node: n)
+                path.removeLast()
+            }
+
+            extraNode = nil
+        }
+
+        visited[node, default: 0] -= 1
+    }
+
+    dfs(node: "start")
+//    print(paths.map{ $0.joined(separator: ",")}.sorted().joined(separator: "\n"))
+
+    print("T12_1: \(paths.count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -793,7 +887,10 @@ for input in inputs {
 //
 //    task10_1(input)
 //    task10_2(input)
+//
+//    task11_1(input)
+//    task11_2(input)
 
-    task11_1(input)
-    task11_2(input)
+    task12_1(input)
+    task12_2(input)
 }
