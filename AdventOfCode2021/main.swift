@@ -254,7 +254,7 @@ func task04_2(_ input: TaskInput) {
 // MARK: - Day 05
 
 extension TaskInput {
-    struct Point {
+    struct Point: Hashable {
         var x: Int
         var y: Int
     }
@@ -849,6 +849,86 @@ func task12_2(_ input: TaskInput) {
     print("T12_1: \(paths.count)")
 }
 
+// MARK: - Day 13
+
+extension TaskInput {
+
+    func task13() -> ([Point], [Point]) {
+        let lines = readInput("13").split(separator: "\n")
+        var idx = 0
+        var coords = [Point]()
+        while lines[idx].starts(with: "fold") == false {
+            let pair = lines[idx].split(separator: ",")
+            coords.append(.init(x: Int(pair[0])!, y: Int(pair[1])!))
+            idx += 1
+        }
+        var folds = [Point]()
+        while idx < lines.count {
+            let pair = lines[idx].split(separator: " ").last!.split(separator: "=")
+            if pair[0] == "x" {
+                folds.append(.init(x: Int(pair[1])!, y:0))
+            } else {
+                folds.append(.init(x: 0, y: Int(pair[1])!))
+            }
+            idx += 1
+        }
+        return (coords, folds)
+    }
+}
+
+func task13_1(_ input: TaskInput) {
+    let (_coords, folds) = input.task13()
+    var coords = Set(_coords)
+    let fold = folds.first!
+    if fold.x == 0 {
+        for c in Array(coords) {
+            if c.y > fold.y {
+                coords.remove(c)
+                coords.insert(.init(x: c.x, y: c.y - (c.y - fold.y) * 2))
+            }
+        }
+    } else {
+        for c in Array(coords) {
+            if c.x > fold.x {
+                coords.remove(c)
+                coords.insert(.init(x: c.x - (c.x - fold.x) * 2, y: c.y))
+            }
+        }
+    }
+    print("T13_1: \(coords.count)")
+}
+
+func task13_2(_ input: TaskInput) {
+    let (_coords, folds) = input.task13()
+    var coords = Set(_coords)
+    for fold in folds {
+        if fold.x == 0 {
+            for c in Array(coords) {
+                if c.y > fold.y {
+                    coords.remove(c)
+                    coords.insert(.init(x: c.x, y: c.y - (c.y - fold.y) * 2))
+                }
+            }
+        } else {
+            for c in Array(coords) {
+                if c.x > fold.x {
+                    coords.remove(c)
+                    coords.insert(.init(x: c.x - (c.x - fold.x) * 2, y: c.y))
+                }
+            }
+        }
+    }
+
+    let (w, h) = (coords.map(\.x).max()! + 1, coords.map(\.y).max()! + 1)
+    var map = [[Bool]](repeating: [Bool](repeating: false, count: w), count: h)
+    for c in coords {
+        map[c.y][c.x] = true
+    }
+    let snap = map.map { l in l.map { $0 ? "@" : " " }.joined() }.joined(separator: "\n")
+
+    print("T13_2:\n\(snap)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -890,7 +970,10 @@ for input in inputs {
 //
 //    task11_1(input)
 //    task11_2(input)
+//
+//    task12_1(input)
+//    task12_2(input)
 
-    task12_1(input)
-    task12_2(input)
+    task13_1(input)
+    task13_2(input)
 }
