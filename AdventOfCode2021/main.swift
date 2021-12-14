@@ -929,6 +929,57 @@ func task13_2(_ input: TaskInput) {
     print("T13_2:\n\(snap)")
 }
 
+// MARK: - Day 14
+
+extension TaskInput {
+
+    func task14() -> ([Character], [String: Character]) {
+        let lines = readInput("14").split(separator: "\n")
+        return (
+            Array(lines.first!),
+            Dictionary(uniqueKeysWithValues: lines.dropFirst().map { line in
+                let ar = Array(line)
+                return (String([ar[0], ar[1]]), ar[6])
+            })
+        )
+    }
+}
+
+enum T14 {
+    static func task14(_ input: TaskInput, sub: Int, steps: Int) {
+        let (line, moves) = input.task14()
+        var counts = [String: Int]()
+        for (a, b) in zip(line.dropLast(), line.dropFirst()) {
+            counts[String([a, b]), default: 0] += 1
+        }
+        var lCounts = Dictionary(grouping: line, by: { $0 }).mapValues { $0.count }
+        for _ in 0..<steps {
+            var nextCounts = counts
+            for (key, count) in counts {
+                if let next = moves[key] {
+                    nextCounts[key, default: 0] -= count
+                    nextCounts[String([key.first!, next]), default: 0] += count
+                    nextCounts[String([next, key.last!]), default: 0] += count
+                    lCounts[next, default: 0] += count
+                }
+            }
+            counts = nextCounts
+    //        print("S \(idx): \(counts.map { "\($0.key)->\($0.value)" }.joined(separator: ", "))")
+        }
+        let mostCommon = lCounts.max(by: { $0.value < $1.value })!
+        let leastCommon = lCounts.min(by: { $0.value < $1.value })!
+        print("T14_\(sub): \(mostCommon.key) -> \(mostCommon.value), \(leastCommon.key) -> \(leastCommon.value), \(mostCommon.value - leastCommon.value)")
+    }
+}
+
+func task14_1(_ input: TaskInput) {
+    T14.task14(input, sub: 1, steps: 10)
+}
+
+func task14_2(_ input: TaskInput) {
+    T14.task14(input, sub: 1, steps: 40)
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -973,7 +1024,10 @@ for input in inputs {
 //
 //    task12_1(input)
 //    task12_2(input)
+//
+//    task13_1(input)
+//    task13_2(input)
 
-    task13_1(input)
-    task13_2(input)
+    task14_1(input)
+    task14_2(input)
 }
