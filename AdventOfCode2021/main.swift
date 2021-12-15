@@ -980,6 +980,55 @@ func task14_2(_ input: TaskInput) {
     T14.task14(input, sub: 1, steps: 40)
 }
 
+// MARK: - Day 15
+
+extension TaskInput {
+    func task15() -> [[Int]] {
+        readInput("15").split(separator: "\n").map { l in l.map { Int(String($0))! }}
+    }
+}
+
+enum T15 {
+    static func task15(map: [[Int]], sub: Int) {
+        let (w, h) = (map.count, map.first!.count)
+        var score = [[Int]](repeating: [Int](repeating: Int.max, count: w), count: h)
+        score[0][0] = 0
+
+        var queue = [(0, 0)]
+        while queue.isEmpty == false {
+            let (x, y) = queue.removeFirst()
+            for (dx, dy) in [(0, 1), (0, -1), (-1, 0), (1, 0)] {
+                let (nx, ny) = (x + dx, y + dy)
+                guard 0 <= nx && nx < w && 0 <= ny && ny < h else { continue }
+                let s = score[y][x] + map[ny][nx]
+                guard s < score[ny][nx] else { continue }
+                score[ny][nx] = s
+                queue.append((nx, ny))
+            }
+        }
+        print("T15_\(sub): \(score.last!.last!)")
+    }
+}
+
+func task15_1(_ input: TaskInput) {
+    let map = input.task15()
+    T15.task15(map: map, sub: 1)
+}
+
+func task15_2(_ input: TaskInput) {
+    let tile = input.task15()
+    let (tw, th) = (tile.count, tile.first!.count)
+    var map = [[Int]](repeating: [Int](repeating: 0, count: tw * 5), count: th * 5)
+    let (w, h) = (map.count, map.first!.count)
+    for y in 0..<h {
+        for x in 0..<w {
+            let val = tile[y % th][x % tw] + (y / th) + (x / tw)
+            map[y][x] = val > 9 ? val - 9 : val
+        }
+    }
+    T15.task15(map: map, sub: 2)
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1027,7 +1076,10 @@ for input in inputs {
 //
 //    task13_1(input)
 //    task13_2(input)
+//
+//    task14_1(input)
+//    task14_2(input)
 
-    task14_1(input)
-    task14_2(input)
+    task15_1(input)
+    task15_2(input)
 }
