@@ -1154,32 +1154,32 @@ func task16_2(_ input: TaskInput) {
     for (idx, reader) in readers.enumerated() {
         let packet = T16.parsePacket(reader)
 
-        func convert(_ packet: T16.Packet) -> String {
+        func calc(_ packet: T16.Packet) -> Int {
             switch packet.payload {
             case .literal(let val):
-                return "(\(val))"
+                return val
             case .operator(let type, let subs):
-                let subStrs = subs.map(convert)
+                let subVals = subs.map(calc)
                 switch type {
                 case .sum:
-                    return "(\(subStrs.joined(separator: " + ")))"
+                    return subVals.reduce(0, +)
                 case .product:
-                    return "(\(subStrs.joined(separator: " * ")))"
+                    return subVals.reduce(0, *)
                 case .minimum:
-                    return "([\(subStrs.joined(separator: ", "))].min()!)"
+                    return subVals.min()!
                 case .maximum:
-                    return "([\(subStrs.joined(separator: ", "))].max()!)"
+                    return subVals.max()!
                 case .gt:
-                    return "(\(subStrs[0]) > \(subStrs[1]) ? 1 : 0)"
+                    return subVals[0] > subVals[1] ? 1 : 0
                 case .lt:
-                    return "(\(subStrs[0]) < \(subStrs[1]) ? 1 : 0)"
+                    return subVals[0] < subVals[1] ? 1 : 0
                 case .eq:
-                    return "(\(subStrs[0]) == \(subStrs[1]) ? 1 : 0)"
+                    return subVals[0] == subVals[1] ? 1 : 0
                 }
             }
         }
 
-        print("T16_2_\(idx): \(convert(packet))")
+        print("T16_2_\(idx): \(calc(packet))")
     }
 }
 
