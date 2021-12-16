@@ -1029,6 +1029,160 @@ func task15_2(_ input: TaskInput) {
     T15.task15(map: map, sub: 2)
 }
 
+// MARK: - Day 16
+
+extension TaskInput {
+    final class BitsReader {
+        private static let hexMap: [Character: [Int]] = [
+            "0": [0,0,0,0],
+            "1": [0,0,0,1],
+            "2": [0,0,1,0],
+            "3": [0,0,1,1],
+            "4": [0,1,0,0],
+            "5": [0,1,0,1],
+            "6": [0,1,1,0],
+            "7": [0,1,1,1],
+            "8": [1,0,0,0],
+            "9": [1,0,0,1],
+            "A": [1,0,1,0],
+            "B": [1,0,1,1],
+            "C": [1,1,0,0],
+            "D": [1,1,0,1],
+            "E": [1,1,1,0],
+            "F": [1,1,1,1],
+        ]
+
+        private(set) var idx = 0;
+        private var bits: [Int]
+
+        init<T: Collection>(hex: T) where T.Element == Character {
+            bits = hex.flatMap { Self.hexMap[$0]!}
+        }
+
+        func nextInt(_ k: Int) -> Int {
+            var result = 0
+            for _ in 0..<k {
+                result = (result << 1) | bits[idx]
+                idx += 1
+            }
+            return result;
+        }
+    }
+    func task16() -> [BitsReader] {
+        readInput("16").split(separator: "\n").map(BitsReader.init(hex:))
+    }
+}
+
+enum T16 {
+    struct Packet {
+        enum Operator: Int {
+            case sum = 0
+            case product = 1
+            case minimum = 2
+            case maximum = 3
+            case gt = 5
+            case lt = 6
+            case eq = 7
+        }
+
+        enum Payload {
+            case literal(Int)
+            case `operator`(Operator, [Packet])
+        }
+
+        var version: Int
+        var payload: Payload
+    }
+
+    static func parsePacket(_ reader: TaskInput.BitsReader) -> Packet {
+        let version = reader.nextInt(3)
+        let type = reader.nextInt(3)
+        let payload: Packet.Payload
+        switch type {
+        case 4:
+            var literal = 0
+            var isLast = false
+            while isLast == false {
+                isLast = reader.nextInt(1) == 0
+                let batch = reader.nextInt(4)
+                literal = (literal << 4) | batch
+            }
+            payload = .literal(literal)
+        default:
+            let lengthType = reader.nextInt(1)
+            var subpackets = [Packet]()
+            if lengthType == 0 {
+                let length = reader.nextInt(15)
+                let start = reader.idx
+                while reader.idx < start + length {
+                    subpackets.append(parsePacket(reader))
+                }
+            } else {
+                let count = reader.nextInt(11)
+                for _ in 0..<count {
+                    subpackets.append(parsePacket(reader))
+                }
+            }
+            payload = .operator(.init(rawValue: type)!, subpackets)
+        }
+        return .init(version: version, payload: payload)
+    }
+}
+
+func task16_1(_ input: TaskInput) {
+    let readers = input.task16()
+    for (idx, reader) in readers.enumerated() {
+        let packet = T16.parsePacket(reader)
+
+        func sumVersions(_ packet: T16.Packet) -> Int {
+            var result = packet.version
+            switch packet.payload {
+            case .literal:
+                break
+            case .operator(_, let subs):
+                result += subs.map(sumVersions).reduce(0, +)
+            }
+            return result
+        }
+
+        print("T16_1_\(idx): \(sumVersions(packet))")
+    }
+}
+
+func task16_2(_ input: TaskInput) {
+    let readers = input.task16()
+    for (idx, reader) in readers.enumerated() {
+        let packet = T16.parsePacket(reader)
+
+        func convert(_ packet: T16.Packet) -> String {
+            switch packet.payload {
+            case .literal(let val):
+                return "(\(val))"
+            case .operator(let type, let subs):
+                let subStrs = subs.map(convert)
+                switch type {
+                case .sum:
+                    return "(\(subStrs.joined(separator: " + ")))"
+                case .product:
+                    return "(\(subStrs.joined(separator: " * ")))"
+                case .minimum:
+                    return "([\(subStrs.joined(separator: ", "))].min()!)"
+                case .maximum:
+                    return "([\(subStrs.joined(separator: ", "))].max()!)"
+                case .gt:
+                    return "(\(subStrs[0]) > \(subStrs[1]) ? 1 : 0)"
+                case .lt:
+                    return "(\(subStrs[0]) < \(subStrs[1]) ? 1 : 0)"
+                case .eq:
+                    return "(\(subStrs[0]) == \(subStrs[1]) ? 1 : 0)"
+                }
+            }
+        }
+
+        print("T16_2_\(idx): \(convert(packet))")
+    }
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1079,7 +1233,10 @@ for input in inputs {
 //
 //    task14_1(input)
 //    task14_2(input)
+//
+//    task15_1(input)
+//    task15_2(input)
 
-    task15_1(input)
-    task15_2(input)
+    task16_1(input)
+    task16_2(input)
 }
