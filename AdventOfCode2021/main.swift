@@ -1053,16 +1053,16 @@ extension TaskInput {
         ]
 
         private(set) var idx = 0;
-        private var bits: [Int]
+        private let hex: [Character]
 
         init<T: Collection>(hex: T) where T.Element == Character {
-            bits = hex.flatMap { Self.hexMap[$0]!}
+            self.hex = .init(hex)
         }
 
         func nextInt(_ k: Int) -> Int {
             var result = 0
             for _ in 0..<k {
-                result = (result << 1) | bits[idx]
+                result = (result << 1) | Self.hexMap[hex[idx / 4]]![idx % 4]
                 idx += 1
             }
             return result;
@@ -1183,6 +1183,79 @@ func task16_2(_ input: TaskInput) {
     }
 }
 
+// MARK: - Day 17
+
+extension TaskInput {
+    func task17() -> (x: ClosedRange<Int>, y: ClosedRange<Int>) {
+        let line = readInput("17").split(separator: "\n").first!
+        let coords = line
+            .split(separator: ":")[1]
+            .split(separator: ",")
+            .map { $0.dropFirst(3) }
+            .flatMap { $0.split(separator: ".") }
+            .map { Int($0)! }
+        return (x: coords[0]...coords[1], y: coords[2]...coords[3])
+    }
+}
+
+func task17_1(_ input: TaskInput) {
+    let ranges = input.task17()
+
+    var score = Int.min
+    for _vx in 0...ranges.x.upperBound {
+        for _vy in -ranges.y.upperBound...(4 * ranges.y.count + 1) {
+            var (x, y) = (0, 0)
+            var (vx, vy) = (_vx, _vy)
+            var maxY = Int.min
+            while x <= ranges.x.upperBound && y >= ranges.y.lowerBound {
+                maxY = max(maxY, y)
+                if ranges.x.contains(x) && ranges.y.contains(y) {
+                    score = max(score, maxY)
+//                    print("Match: \(_vx) \(_vy) -> \(score)")
+                    break
+                }
+                if maxY < score && vy < 0 {
+                    break
+                }
+                x += vx
+                y += vy
+                if vx != 0 {
+                    vx -= vx / abs(vx)
+                }
+                vy -= 1
+            }
+        }
+    }
+    print("T17_1: \(score)")
+}
+
+func task17_2(_ input: TaskInput) {
+    let ranges = input.task17()
+
+    var count = 0
+    for _vx in 0...ranges.x.upperBound {
+        for _vy in (2 * ranges.y.upperBound)...(10 * ranges.y.count + 1) {
+            var (x, y) = (0, 0)
+            var (vx, vy) = (_vx, _vy)
+            var maxY = Int.min
+            while x <= ranges.x.upperBound && y >= ranges.y.lowerBound {
+                maxY = max(maxY, y)
+                if ranges.x.contains(x) && ranges.y.contains(y) {
+                    count += 1
+                    break
+                }
+                x += vx
+                y += vy
+                if vx != 0 {
+                    vx -= vx / abs(vx)
+                }
+                vy -= 1
+            }
+        }
+    }
+    print("T17_2: \(count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1236,7 +1309,10 @@ for input in inputs {
 //
 //    task15_1(input)
 //    task15_2(input)
+//
+//    task16_1(input)
+//    task16_2(input)
 
-    task16_1(input)
-    task16_2(input)
+    task17_1(input)
+    task17_2(input)
 }
