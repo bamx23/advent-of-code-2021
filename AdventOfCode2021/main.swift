@@ -1256,6 +1256,146 @@ func task17_2(_ input: TaskInput) {
     print("T17_2: \(count)")
 }
 
+// MARK: - Day 18
+
+extension TaskInput {
+    func task18() -> [T18.TreeNode] {
+        readInput("18").split(separator: "\n").map(T18.TreeNode.parse)
+    }
+}
+
+enum T18 {
+    final class TreeNode {
+        var val: Int?
+
+        var left: TreeNode?
+        var right: TreeNode?
+
+        init(val: Int?, left: TreeNode?, right: TreeNode?) {
+            self.val = val
+            self.left = left
+            self.right = right
+        }
+
+        static func parse<T: StringProtocol>(_ str: T) -> TreeNode {
+            let result = parse(str, idx: str.startIndex).0
+            result.reduce()
+            return result
+        }
+
+        private static func parse<T: StringProtocol>(_ str: T, idx: T.Index) -> (TreeNode, T.Index) {
+            var val: Int?
+            var left: TreeNode?
+            var right: TreeNode?
+            var nextIdx = idx
+            if str[idx] == "[" {
+                nextIdx = str.index(after: nextIdx)
+                (left, nextIdx) = parse(str, idx: nextIdx)
+                nextIdx = str.index(after: nextIdx)
+                (right, nextIdx) = parse(str, idx: nextIdx)
+                nextIdx = str.index(after: nextIdx)
+            } else {
+                while str[nextIdx].isNumber {
+                    nextIdx = str.index(after: nextIdx)
+                }
+                val = Int(str[idx..<nextIdx])!
+            }
+            return (.init(val: val, left: left, right: right), nextIdx)
+        }
+
+        private func reduce() {
+            var shouldContinue = true
+            while shouldContinue {
+                shouldContinue = explodeIfNeeded() != nil || splitIfNeeded()
+            }
+        }
+
+        private func explodeIfNeeded(_ level: Int = 0) -> (Int?, Int?)? {
+            if val != nil { return nil }
+            if level == 4 {
+                let result = (left!.val!, right!.val!)
+                val = 0
+                left = nil
+                right = nil
+                return result
+            }
+            if let (l, r) = left!.explodeIfNeeded(level + 1) {
+                if let r = r {
+                    right!.addLeft(r)
+                }
+                return (l, nil)
+            } else if let (l, r) = right!.explodeIfNeeded(level + 1) {
+                if let l = l {
+                    left!.addRight(l)
+                }
+                return (nil, r)
+            } else {
+                return nil
+            }
+        }
+
+        private func addLeft(_ val: Int) {
+            if self.val != nil {
+                self.val! += val
+            } else {
+                left!.addLeft(val)
+            }
+        }
+
+        private func addRight(_ val: Int) {
+            if self.val != nil {
+                self.val! += val
+            } else {
+                right!.addRight(val)
+            }
+        }
+
+        private func splitIfNeeded() -> Bool {
+            if let val = val {
+                if val < 10 { return false }
+                left = .init(val: val / 2, left: nil, right: nil)
+                right = .init(val: val - left!.val!, left: nil, right: nil)
+                self.val = nil
+                return true
+            }
+            return left!.splitIfNeeded() || right!.splitIfNeeded()
+        }
+
+        func magnitude() -> Int {
+            if let val = val { return val }
+            return 3 * left!.magnitude() + 2 * right!.magnitude()
+        }
+
+        func copy() -> TreeNode {
+            return TreeNode(val: val, left: left?.copy(), right: right?.copy())
+        }
+
+        static func +(_ lhs: TreeNode, _ rhs: TreeNode) -> TreeNode {
+            let result = TreeNode(val: nil, left: lhs.copy(), right: rhs.copy())
+            result.reduce()
+            return result
+        }
+    }
+}
+
+func task18_1(_ input: TaskInput) {
+    let nums = input.task18()
+    let result = nums.dropFirst().reduce(nums.first!, +)
+    print("T18_1: \(result.magnitude())")
+}
+
+func task18_2(_ input: TaskInput) {
+    let nums = input.task18()
+    var maxMagnitude = Int.min
+    for (i1, n1) in nums.enumerated() {
+        for (i2, n2) in nums.enumerated() {
+            if i1 == i2 { continue }
+            maxMagnitude = max(maxMagnitude, (n1 + n2).magnitude())
+        }
+    }
+    print("T18_2: \(maxMagnitude)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1312,7 +1452,10 @@ for input in inputs {
 //
 //    task16_1(input)
 //    task16_2(input)
+//
+//    task17_1(input)
+//    task17_2(input)
 
-    task17_1(input)
-    task17_2(input)
+    task18_1(input)
+    task18_2(input)
 }
