@@ -1475,12 +1475,12 @@ extension Set where Element == TaskInput.Point3D {
 
 enum T19 {
     static func match(_ scanners: [Set<TaskInput.Point3D>]) -> (Int, Int, Set<TaskInput.Point3D>) {
-        let allVariants = scanners.enumerated().flatMap { (idx, s) in s.allVariants().map { (idx, $0) } }
-        for (i1, v1) in allVariants.enumerated() {
-            let (idx1, s1) = v1
-            for v2 in allVariants.dropFirst(i1 + 1) {
-                let (idx2, s2) = v2
-                guard idx2 != idx1 else { continue }
+        let allVariants = scanners.enumerated()
+            .flatMap { (idx, s) in s.allVariants().map { (idx, $0) } }
+            .shuffled()
+        for (idx1, s1) in allVariants {
+            for (idx2, s2) in allVariants {
+                guard idx2 > idx1 else { continue }
                 if s1.intersection(s2).count >= 12 {
                     return (idx1, idx2, s1.union(s2))
                 }
