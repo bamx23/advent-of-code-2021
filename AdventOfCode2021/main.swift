@@ -1396,6 +1396,123 @@ func task18_2(_ input: TaskInput) {
     print("T18_2: \(maxMagnitude)")
 }
 
+// MARK: - Day 19
+
+extension TaskInput {
+    struct Point3D: Hashable {
+        var x: Int
+        var y: Int
+        var z: Int
+        var isScanner: Bool = false
+    }
+    func task19() -> [Set<Point3D>] {
+        let lines = readInput("19").split(separator: "\n")
+        var result = [Set<Point3D>]()
+        var scaner = Set<Point3D>()
+        for line in lines {
+            if line.starts(with: "---") {
+                result.append(scaner)
+                scaner.removeAll()
+                scaner.insert(Point3D(x: 0, y: 0, z: 0, isScanner: true))
+            } else {
+                let ints = line.split(separator: ",").map { Int($0)! }
+                scaner.insert(.init(x: ints[0], y: ints[1], z: ints[2]))
+            }
+        }
+        result.append(scaner)
+        return Array(result.dropFirst())
+    }
+}
+
+extension Set where Element == TaskInput.Point3D {
+    private static let maps: [(Int, Int, Int) -> (Int, Int, Int)] = [
+        { (x, y, z) in (x, y, z) },
+        { (x, y, z) in (x, z, -y) },
+        { (x, y, z) in (x, -y, -z) },
+        { (x, y, z) in (x, -z, y) },
+
+        { (x, y, z) in (-x, y, z) },
+        { (x, y, z) in (-x, z, -y) },
+        { (x, y, z) in (-x, -y, -z) },
+        { (x, y, z) in (-x, -z, y) },
+
+        { (x, y, z) in (-z, y, x) },
+        { (x, y, z) in (-x, y, -z) },
+        { (x, y, z) in (z, y, -x) },
+
+        { (x, y, z) in (x, -y, z) },
+        { (x, y, z) in (-z, -y, x) },
+        { (x, y, z) in (-x, -y, -z) },
+        { (x, y, z) in (z, -y, -x) },
+
+        { (x, y, z) in (-y, x, z) },
+        { (x, y, z) in (-x, -y, z) },
+        { (x, y, z) in (-y, x, z) },
+
+        { (x, y, z) in (x, y, -z) },
+        { (x, y, z) in (-y, x, -z) },
+        { (x, y, z) in (-x, -y, -z) },
+        { (x, y, z) in (-y, x, -z) },
+    ]
+
+    func rotations() -> [Set<TaskInput.Point3D>] {
+        Self.maps.map { m -> Set<TaskInput.Point3D> in
+            Set(self.map { p -> TaskInput.Point3D in
+                let (x, y, z) = m(p.x, p.y, p.z)
+                return TaskInput.Point3D(x: x, y: y, z: z, isScanner: p.isScanner)
+            })
+        }
+    }
+
+    func transpose(_ point: TaskInput.Point3D) -> Set<TaskInput.Point3D> {
+        Set(self.map { p in .init(x: p.x - point.x, y: p.y - point.y, z: p.z - point.z, isScanner: p.isScanner) })
+    }
+
+    func allVariants() -> [Set<TaskInput.Point3D>] {
+        rotations().flatMap { r in r.map { r.transpose($0) } }
+    }
+}
+
+enum T19 {
+    static func match(_ scanners: [Set<TaskInput.Point3D>]) -> (Int, Int, Set<TaskInput.Point3D>) {
+        let allVariants = scanners.enumerated().flatMap { (idx, s) in s.allVariants().map { (idx, $0) } }
+        for (i1, v1) in allVariants.enumerated() {
+            let (idx1, s1) = v1
+            for v2 in allVariants.dropFirst(i1 + 1) {
+                let (idx2, s2) = v2
+                guard idx2 != idx1 else { continue }
+                if s1.intersection(s2).count >= 12 {
+                    return (idx1, idx2, s1.union(s2))
+                }
+            }
+        }
+        fatalError()
+    }
+}
+
+func task19_1(_ input: TaskInput) {
+    var scanners = input.task19()
+    while scanners.count != 1 {
+        let (i1, i2, ns) = T19.match(scanners)
+        scanners.remove(at: i1)
+        scanners[i2 - 1] = ns
+    }
+    print("T19_1: \(scanners.first!.filter { $0.isScanner == false }.count)")
+
+    let sPoints = scanners.first!.filter { $0.isScanner }
+    var maxDist = Int.min
+    for (idx, p1) in sPoints.enumerated() {
+        for p2 in sPoints.dropFirst(idx + 1) {
+            maxDist = max(maxDist, abs(p1.x - p2.x) + abs(p1.y - p2.y) + abs(p1.z - p2.z))
+        }
+    }
+    print("T19_2: \(maxDist)")
+}
+
+func task19_2(_ input: TaskInput) {
+    // In _1
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1455,7 +1572,10 @@ for input in inputs {
 //
 //    task17_1(input)
 //    task17_2(input)
+//
+//    task18_1(input)
+//    task18_2(input)
 
-    task18_1(input)
-    task18_2(input)
+    task19_1(input)
+    task19_2(input)
 }
