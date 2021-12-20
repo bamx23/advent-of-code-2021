@@ -1513,6 +1513,63 @@ func task19_2(_ input: TaskInput) {
     // In _1
 }
 
+// MARK: - Day 20
+
+extension TaskInput {
+    func task20() -> ([Bool], [[Bool]]) {
+        let lines = readInput("20").split(separator: "\n")
+        let alg = lines.first!.map { $0 == "#" }
+        let img = lines.dropFirst().map { l in l.map { $0 == "#" } }
+        return (alg, img)
+    }
+}
+
+enum T20 {
+    static func processStep(_ img: [[Bool]], alg: [Bool], step: Int) -> [[Bool]] {
+        let (h, w) = (img.count, img.first!.count)
+        var result = [[Bool]](repeating: [Bool](repeating: false, count: w + 2), count: h + 2)
+        for y in 0..<(h + 2) {
+            for x in 0..<(w + 2) {
+                var val = 0
+                for dy in -1...1 {
+                    for dx in -1...1 {
+                        let (px, py) = (x + dx - 1, y + dy - 1)
+                        val <<= 1
+                        if 0 <= px && px < w && 0 <= py && py < h {
+                            val += img[py][px] ? 1 : 0
+                        } else {
+                            val += (step % 2 == 0) ? 0 : (alg[0] ? 1 : 0)
+                        }
+                    }
+                }
+                result[y][x] = alg[val]
+            }
+        }
+        return result
+    }
+}
+
+func task20_1(_ input: TaskInput) {
+    let (alg, img) = input.task20()
+    var result = img
+    for idx in 0..<2 {
+        result = T20.processStep(result, alg: alg, step: idx)
+    }
+//    print(result.map { l in l.map { $0 ? "#" : "." }.joined()}.joined(separator: "\n"))
+    let count = result.flatMap { l in l.map { $0 ? 1 : 0 } }.reduce(0, +)
+    print("T20_1: \(count)")
+}
+
+func task20_2(_ input: TaskInput) {
+    let (alg, img) = input.task20()
+    var result = img
+    for idx in 0..<50 {
+        result = T20.processStep(result, alg: alg, step: idx)
+    }
+    let count = result.flatMap { l in l.map { $0 ? 1 : 0 } }.reduce(0, +)
+    print("T20_2: \(count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1522,6 +1579,7 @@ let inputs = [
 
 for input in inputs {
     print("Run for \(input.prefix)")
+    let start = Date()
 //    task01_1(input)
 //    task01_2(input)
 //
@@ -1575,7 +1633,12 @@ for input in inputs {
 //
 //    task18_1(input)
 //    task18_2(input)
+//
+//    task19_1(input)
+//    task19_2(input)
 
-    task19_1(input)
-    task19_2(input)
+    task20_1(input)
+    task20_2(input)
+
+    print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
