@@ -1570,6 +1570,84 @@ func task20_2(_ input: TaskInput) {
     print("T20_2: \(count)")
 }
 
+// MARK: - Day 21
+
+extension TaskInput {
+    func task21() -> (Int, Int) {
+        let p = readInput("21").split(separator: "\n").map { l in Int(l.split(separator: " ").last!)! }
+        return (p[0], p[1])
+    }
+}
+
+enum T21 {
+}
+
+func task21_1(_ input: TaskInput) {
+    var (a, b) = input.task21()
+    (a, b) = (a - 1, b - 1)
+    var roll = 1
+    var (sA, sB) = (0, 0)
+    var count = 0
+    while max(sA, sB) < 1000 {
+        for _ in 0..<3 {
+            a = (a + roll) % 10
+            if roll == 100 { roll = 1 } else { roll += 1 }
+            count += 1
+        }
+        sA += (a + 1)
+        (a, b) = (b, a)
+        (sA, sB) = (sB, sA)
+    }
+    let other = min(sA, sB)
+    print("T21_1: \(count), \(other) -> \(count * other)")
+}
+
+func task21_2(_ input: TaskInput) {
+    let (a, b) = input.task21()
+
+    struct State: Hashable {
+        var a: Int
+        var b: Int
+        var sA: Int = 0
+        var sB: Int = 0
+        var turnA: Bool = true
+    }
+
+    let winScore = 21
+    var cache = [State: (Int, Int)]()
+    func solve(_ state: State) -> (Int, Int) {
+        if state.sA >= winScore { return (1, 0) }
+        if state.sB >= winScore { return (0, 1) }
+        if let result = cache[state] { return result }
+
+        var (wA, wB) = (0, 0)
+        for r1 in 1...3 {
+            for r2 in 1...3 {
+                for r3 in 1...3 {
+                    var state = state
+                    if state.turnA {
+                        state.a = (state.a + r1 + r2 + r3) % 10
+                        state.sA += (state.a + 1)
+                    } else {
+                        state.b = (state.b + r1 + r2 + r3) % 10
+                        state.sB += (state.b + 1)
+                    }
+                    state.turnA.toggle()
+                    let (rA, rB) = solve(state)
+                    wA += rA
+                    wB += rB
+                }
+            }
+        }
+
+        cache[state] = (wA, wB)
+        return (wA, wB)
+    }
+
+    let (wA, wB) = solve(.init(a: a - 1, b: b - 1))
+    print("T21_2: \(wA), \(wB) -> \(max(wA, wB))")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1636,9 +1714,12 @@ for input in inputs {
 //
 //    task19_1(input)
 //    task19_2(input)
+//
+//    task20_1(input)
+//    task20_2(input)
 
-    task20_1(input)
-    task20_2(input)
+    task21_1(input)
+    task21_2(input)
 
     print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
