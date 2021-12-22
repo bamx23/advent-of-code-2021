@@ -1648,6 +1648,134 @@ func task21_2(_ input: TaskInput) {
     print("T21_2: \(wA), \(wB) -> \(max(wA, wB))")
 }
 
+// MARK: - Day 22
+
+extension TaskInput {
+    func task22() -> [(Bool, T22.RebootStep)] {
+        readInput("22").split(separator: "\n").map { l in
+            let p1 = l.split(separator: " ")
+            let isOn = p1[0] == "on"
+            let coords = p1[1].split(separator: ",").map { c in c.dropFirst(2).split(separator: ".").map { Int($0)! } }
+            return (isOn, T22.RebootStep(
+                x: coords[0][0]...coords[0][1],
+                y: coords[1][0]...coords[1][1],
+                z: coords[2][0]...coords[2][1]
+            ))
+        }
+    }
+}
+
+enum T22 {
+    struct RebootStep {
+        var x: ClosedRange<Int>
+        var y: ClosedRange<Int>
+        var z: ClosedRange<Int>
+    }
+}
+
+func task22_1(_ input: TaskInput) {
+    let steps = input.task22()
+    let size = 50
+    let mSize = size * 2 + 1
+    var cube = [[[Bool]]](
+        repeating: [[Bool]](
+            repeating: [Bool](
+                repeating: false,
+                count: mSize
+            ),
+            count: mSize
+        ),
+        count: mSize
+    )
+    for (isOn, step) in steps {
+        guard step.z.lowerBound <= size && step.z.upperBound >= -size &&
+                step.y.lowerBound <= size && step.y.upperBound >= -size &&
+                step.x.lowerBound <= size && step.x.upperBound >= -size else { continue }
+        for z in max(step.z.lowerBound, -size)...min(step.z.upperBound, size) {
+            for y in max(step.y.lowerBound, -size)...min(step.y.upperBound, size) {
+                for x in max(step.x.lowerBound, -size)...min(step.x.upperBound, size) {
+                    cube[z + size][y + size][x + size] = isOn
+                }
+            }
+        }
+    }
+    var count = 0
+    for l1 in cube {
+        for l2 in l1 {
+            for l3 in l2 {
+                if l3 {
+                    count += 1
+                }
+            }
+        }
+    }
+    print("T22_1: \(count)")
+}
+
+extension ClosedRange where Bound == Int {
+    func split(_ other: Self) -> [Self] {
+        if lowerBound > other.upperBound || upperBound < other.lowerBound {
+            return []
+        }
+        if other.lowerBound <= lowerBound && upperBound <= other.upperBound {
+            return [self]
+        }
+        if lowerBound < other.lowerBound && upperBound > other.upperBound {
+            return [lowerBound...(other.lowerBound - 1), other, (other.upperBound + 1)...upperBound]
+        }
+        if other.lowerBound <= lowerBound  {
+            return [lowerBound...other.upperBound, (other.upperBound + 1)...upperBound]
+        } else {
+            return [lowerBound...(other.lowerBound - 1), other.lowerBound...upperBound]
+        }
+    }
+}
+
+extension T22.RebootStep {
+    func intersects(_ other: T22.RebootStep) -> Bool {
+        x.overlaps(other.x) && y.overlaps(other.y) && z.overlaps(other.z)
+    }
+
+    func removing(_ other: T22.RebootStep) -> [T22.RebootStep] {
+        let xInts = x.split(other.x)
+        let yInts = y.split(other.y)
+        let zInts = z.split(other.z)
+        guard xInts.isEmpty == false && yInts.isEmpty == false && zInts.isEmpty == false
+        else {
+            return [self]
+        }
+
+        var result = [T22.RebootStep]()
+        for xInt in xInts {
+            for yInt in yInts {
+                for zInt in zInts {
+                    result.append(.init(x: xInt, y: yInt, z: zInt))
+                }
+            }
+        }
+        return result.filter { $0.intersects(other) == false }
+    }
+
+    var count: Int { x.count * y.count * z.count }
+}
+
+func task22_2(_ input: TaskInput) {
+    let steps = input.task22()
+    var onRegions = [T22.RebootStep]()
+    for (isOn, step) in steps {
+        var nextOn = [T22.RebootStep]()
+        for region in onRegions {
+            nextOn.append(contentsOf: region.removing(step))
+        }
+        if isOn {
+            nextOn.append(step)
+        }
+        onRegions = nextOn
+    }
+    let count = onRegions.map(\.count).reduce(0, +)
+    print("T22_2: \(count)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1717,9 +1845,12 @@ for input in inputs {
 //
 //    task20_1(input)
 //    task20_2(input)
+//
+//    task21_1(input)
+//    task21_2(input)
 
-    task21_1(input)
-    task21_2(input)
+    task22_1(input)
+    task22_2(input)
 
     print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
