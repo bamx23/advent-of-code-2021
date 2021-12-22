@@ -1673,45 +1673,6 @@ enum T22 {
     }
 }
 
-func task22_1(_ input: TaskInput) {
-    let steps = input.task22()
-    let size = 50
-    let mSize = size * 2 + 1
-    var cube = [[[Bool]]](
-        repeating: [[Bool]](
-            repeating: [Bool](
-                repeating: false,
-                count: mSize
-            ),
-            count: mSize
-        ),
-        count: mSize
-    )
-    for (isOn, step) in steps {
-        guard step.z.lowerBound <= size && step.z.upperBound >= -size &&
-                step.y.lowerBound <= size && step.y.upperBound >= -size &&
-                step.x.lowerBound <= size && step.x.upperBound >= -size else { continue }
-        for z in max(step.z.lowerBound, -size)...min(step.z.upperBound, size) {
-            for y in max(step.y.lowerBound, -size)...min(step.y.upperBound, size) {
-                for x in max(step.x.lowerBound, -size)...min(step.x.upperBound, size) {
-                    cube[z + size][y + size][x + size] = isOn
-                }
-            }
-        }
-    }
-    var count = 0
-    for l1 in cube {
-        for l2 in l1 {
-            for l3 in l2 {
-                if l3 {
-                    count += 1
-                }
-            }
-        }
-    }
-    print("T22_1: \(count)")
-}
-
 extension ClosedRange where Bound == Int {
     func split(_ other: Self) -> [Self] {
         if lowerBound > other.upperBound || upperBound < other.lowerBound {
@@ -1759,19 +1720,41 @@ extension T22.RebootStep {
     var count: Int { x.count * y.count * z.count }
 }
 
+extension T22 {
+    static func processSteps(_ steps: [(Bool, RebootStep)]) -> [RebootStep] {
+        var onRegions = [RebootStep]()
+        for (isOn, step) in steps {
+            var nextOn = [RebootStep]()
+            for region in onRegions {
+                nextOn.append(contentsOf: region.removing(step))
+            }
+            if isOn {
+                nextOn.append(step)
+            }
+            onRegions = nextOn
+        }
+        return onRegions
+    }
+}
+
+func task22_1(_ input: TaskInput) {
+    let steps = input.task22()
+    let size = 50
+    let onRegions = T22.processSteps(steps + [
+        (false, T22.RebootStep(x: Int.min...(-size - 1), y: Int.min...Int.max, z: Int.min...Int.max)),
+        (false, T22.RebootStep(x: (size + 1)...Int.max, y: Int.min...Int.max, z: Int.min...Int.max)),
+        (false, T22.RebootStep(x: Int.min...Int.max, y: Int.min...(-size - 1), z: Int.min...Int.max)),
+        (false, T22.RebootStep(x: Int.min...Int.max, y: (size + 1)...Int.max, z: Int.min...Int.max)),
+        (false, T22.RebootStep(x: Int.min...Int.max, y: Int.min...Int.max, z: Int.min...(-size - 1))),
+        (false, T22.RebootStep(x: Int.min...Int.max, y: Int.min...Int.max, z: (size + 1)...Int.max)),
+    ])
+    let count = onRegions.map(\.count).reduce(0, +)
+    print("T22_1: \(count)")
+}
+
 func task22_2(_ input: TaskInput) {
     let steps = input.task22()
-    var onRegions = [T22.RebootStep]()
-    for (isOn, step) in steps {
-        var nextOn = [T22.RebootStep]()
-        for region in onRegions {
-            nextOn.append(contentsOf: region.removing(step))
-        }
-        if isOn {
-            nextOn.append(step)
-        }
-        onRegions = nextOn
-    }
+    let onRegions = T22.processSteps(steps)
     let count = onRegions.map(\.count).reduce(0, +)
     print("T22_2: \(count)")
 }
