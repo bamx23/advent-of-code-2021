@@ -1759,6 +1759,204 @@ func task22_2(_ input: TaskInput) {
     print("T22_2: \(count)")
 }
 
+// MARK: - Day 23
+
+extension TaskInput {
+    func task23() -> [TaskInput.Point: Int] {
+        let lines = readInput("23").split(separator: "\n").dropFirst(2).dropLast()
+        let aLetter = Int("A".first!.asciiValue!)
+        return Dictionary(uniqueKeysWithValues: lines.enumerated().flatMap { (y, l) -> [(TaskInput.Point, Int)] in
+            l.split(separator: "#").filter { $0.count == 1 }.enumerated().map { (x, g) -> (TaskInput.Point, Int) in
+                (TaskInput.Point(x: 2 + x * 2, y: y + 1), (Int(g.first!.asciiValue!) - aLetter) * 2 + 2)
+            }
+        })
+    }
+}
+
+enum T23 {
+}
+
+func task23_1(_ input: TaskInput) {
+    let pods = input.task23()
+
+    var cache = [[TaskInput.Point: Int]:Int]()
+    let mult: [Int: Int] = [2: 1, 4: 10, 6: 100, 8: 1000]
+
+    func solve(pods: [TaskInput.Point: Int]) -> Int {
+        if pods.allSatisfy({ $0.key.x == $0.value }) { return 0 }
+        if let score = cache[pods] { return score }
+
+        var minScore = Int.max
+
+//        var viz = [[String]](repeating: [String](repeating: "#", count: 13), count: 5)
+//        for x in 1...11 {
+//            viz[1][x] = "."
+//        }
+//        for x in [3,5,7,9] {
+//            viz[2][x] = "."
+//            viz[3][x] = "."
+//        }
+//        for (pos, dest) in pods {
+//            viz[pos.y + 1][pos.x + 1] = [2: "A", 4: "B", 6: "C", 8: "D"][dest]!
+//        }
+//        print(viz.map { $0.joined() }.joined(separator: "\n"))
+//        print("")
+
+        func tryMove(pos: TaskInput.Point, dest: Int, nextPos: TaskInput.Point) {
+            var nextPods = pods
+            nextPods[pos] = nil
+            nextPods[nextPos] = dest
+            let nextScore = solve(pods: nextPods)
+            if nextScore != Int.max {
+                let score = nextScore + mult[dest]! * (abs(pos.x - nextPos.x) + abs(pos.y - nextPos.y))
+                minScore = min(minScore, score)
+            }
+        }
+
+        for (pos, dest) in pods {
+            if pos.x == dest && (pos.y == 2 || pods[.init(x: dest, y: 2)] == dest) { continue }
+            if pos.y == 0 {
+                var possible = true
+                for x in min(pos.x, dest)...max(pos.x, dest) {
+                    if x == pos.x { continue }
+                    if pods[.init(x: x, y: 0)] != nil {
+                        possible = false
+                        break
+                    }
+                }
+                if possible {
+                    let p2 = pods[.init(x: dest, y: 2)]
+                    if p2 == nil {
+                        tryMove(pos: pos, dest: dest, nextPos: .init(x: dest, y: 2))
+                    } else if pods[.init(x: dest, y: 1)] == nil && p2 == dest {
+                        tryMove(pos: pos, dest: dest, nextPos: .init(x: dest, y: 1))
+                    }
+                }
+            } else if pos.y == 1 || (pos.y == 2 && pods[.init(x: pos.x, y: 1)] == nil) {
+                for nextX in [0, 1, 3, 5, 7, 9, 10] {
+                    var possible = true
+                    for x in min(pos.x, nextX)...max(pos.x, nextX) {
+                        if x == pos.x { continue }
+                        if pods[.init(x: x, y: 0)] != nil {
+                            possible = false
+                            break
+                        }
+                    }
+                    if possible {
+                        tryMove(pos: pos, dest: dest, nextPos: .init(x: nextX, y: 0))
+                    }
+                }
+            }
+        }
+
+        cache[pods] = minScore
+        return minScore
+    }
+
+    let score = solve(pods: pods)
+    print("T23_1: \(score)")
+}
+
+func task23_2(_ input: TaskInput) {
+    var pods = input.task23()
+    for x in [2,4,6,8] {
+        let dest = pods[.init(x: x, y: 2)]
+        pods[.init(x: x, y: 2)] = nil
+        pods[.init(x: x, y: 4)] = dest
+    }
+    pods[.init(x: 2, y: 2)] = 8
+    pods[.init(x: 2, y: 3)] = 8
+    pods[.init(x: 4, y: 2)] = 6
+    pods[.init(x: 4, y: 3)] = 4
+    pods[.init(x: 6, y: 2)] = 4
+    pods[.init(x: 6, y: 3)] = 2
+    pods[.init(x: 8, y: 2)] = 2
+    pods[.init(x: 8, y: 3)] = 6
+
+    var cache = [[TaskInput.Point: Int]:Int]()
+    let mult: [Int: Int] = [2: 1, 4: 10, 6: 100, 8: 1000]
+
+    func solve(pods: [TaskInput.Point: Int], depth: Int = 0) -> Int {
+        if pods.allSatisfy({ $0.key.x == $0.value }) { return 0 }
+        if let score = cache[pods] { return score }
+
+        var minScore = Int.max
+        cache[pods] = minScore
+
+//        var viz = [[String]](repeating: [String](repeating: "#", count: 13), count: 7)
+//        for x in 1...11 {
+//            viz[1][x] = "."
+//        }
+//        for x in [3,5,7,9] {
+//            viz[2][x] = "."
+//            viz[3][x] = "."
+//            viz[4][x] = "."
+//            viz[5][x] = "."
+//        }
+//        for (pos, dest) in pods {
+//            viz[pos.y + 1][pos.x + 1] = [2: "A", 4: "B", 6: "C", 8: "D"][dest]!
+//        }
+//        print(viz.map { $0.joined() }.joined(separator: "\n"))
+//        print("")
+
+        func tryMove(pos: TaskInput.Point, dest: Int, nextPos: TaskInput.Point) {
+            var nextPods = pods
+            nextPods[pos] = nil
+            nextPods[nextPos] = dest
+            let nextScore = solve(pods: nextPods, depth: depth + 1)
+            if nextScore != Int.max {
+                let score = nextScore + mult[dest]! * (abs(pos.x - nextPos.x) + abs(pos.y - nextPos.y))
+                minScore = min(minScore, score)
+            }
+        }
+
+        for (pos, dest) in pods {
+            if pos.x == dest && (pos.y...4).allSatisfy({ pods[.init(x: dest, y: $0)] == dest }) { continue }
+            if pos.y == 0 {
+                var possible = true
+                for x in min(pos.x, dest)...max(pos.x, dest) {
+                    if x == pos.x { continue }
+                    if pods[.init(x: x, y: 0)] != nil {
+                        possible = false
+                        break
+                    }
+                }
+                if possible {
+                    for y in (1...4).reversed() {
+                        let val = pods[.init(x: dest, y: y)]
+                        if val == nil {
+                            tryMove(pos: pos, dest: dest, nextPos: .init(x: dest, y: y))
+                            break
+                        } else if val != dest {
+                            break
+                        }
+                    }
+                }
+            } else if pos.y == 1 || (1..<pos.y).allSatisfy({ pods[.init(x: pos.x, y: $0)] == nil }) {
+                for nextX in [0, 1, 3, 5, 7, 9, 10] {
+                    var possible = true
+                    for x in min(pos.x, nextX)...max(pos.x, nextX) {
+                        if x == pos.x { continue }
+                        if pods[.init(x: x, y: 0)] != nil {
+                            possible = false
+                            break
+                        }
+                    }
+                    if possible {
+                        tryMove(pos: pos, dest: dest, nextPos: .init(x: nextX, y: 0))
+                    }
+                }
+            }
+        }
+
+        cache[pods] = minScore
+        return minScore
+    }
+
+    let score = solve(pods: pods)
+    print("T23_2: \(score)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -1831,9 +2029,12 @@ for input in inputs {
 //
 //    task21_1(input)
 //    task21_2(input)
+//
+//    task22_1(input)
+//    task22_2(input)
 
-    task22_1(input)
-    task22_2(input)
+    task23_1(input)
+    task23_2(input)
 
     print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
