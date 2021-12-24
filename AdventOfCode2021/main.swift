@@ -2090,15 +2090,10 @@ static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = [
 
             if cache.contains(state) { return nil }
 
-            let endStates = Dictionary(digits.map { val -> (T24.State, Int) in
+            for val in digits {
                 var state = state
                 processors[state.idx](val, &state.d1, &state.d2, &state.d3)
                 state.idx += 1
-                return (state, val)
-            }, uniquingKeysWith: { (a, b) in a })
-                .sorted(by: { digits.firstIndex(of: $0.value)! < digits.firstIndex(of: $1.value)! })
-
-            for (state, val) in endStates {
                 if let result = solve(state: state) {
                     return "\(val)\(result)"
                 }
