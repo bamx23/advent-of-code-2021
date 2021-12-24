@@ -1957,6 +1957,185 @@ func task23_2(_ input: TaskInput) {
     print("T23_2: \(score)")
 }
 
+// MARK: - Day 23
+
+extension TaskInput {
+    func task24() -> [T24.Op] {
+        readInput("24").split(separator: "\n").map { l in
+            let parts = l.split(separator: " ")
+            var rhs: T24.Lit?
+            if parts.count == 3 {
+                if parts[2].first!.isLetter {
+                    rhs = .var(parts[2].first!)
+                } else {
+                    rhs = .num(Int(parts[2])!)
+                }
+            }
+            let lhs = parts[1].first!
+            switch parts[0] {
+            case "inp":
+                return .inp(lhs)
+            case "add":
+                return .add(lhs, rhs!)
+            case "mul":
+                return .mul(lhs, rhs!)
+            case "div":
+                return .div(lhs, rhs!)
+            case "mod":
+                return .mod(lhs, rhs!)
+            case "eql":
+                return .eql(lhs, rhs!)
+            default:
+                fatalError()
+            }
+        }
+    }
+}
+
+enum T24 {
+    typealias Var = Character
+    typealias State = [Var: Int]
+    enum Lit {
+        case `var`(Var)
+        case num(Int)
+    }
+    enum Op {
+        case inp(Var)
+        case add(Var, Lit)
+        case mul(Var, Lit)
+        case div(Var, Lit)
+        case mod(Var, Lit)
+        case eql(Var, Lit)
+    }
+}
+
+extension T24.State {
+    mutating func appling(_ op: T24.Op) {
+        let target: T24.Var
+        switch op {
+        case .inp:
+            fatalError()
+        case .add(let v, _), .mul(let v, _), .div(let v, _), .mod(let v, _), .eql(let v, _):
+            target = v
+        }
+
+        let rhs: Int
+        switch op {
+        case .inp:
+            fatalError()
+        case .add(_, let l), .mul(_, let l), .div(_, let l), .mod(_, let l), .eql(_, let l):
+            switch l {
+            case .num(let v):
+                rhs = v
+            case .var(let v):
+                rhs = self[v, default: 0]
+            }
+        }
+
+        switch op {
+        case .inp:
+            // Not here
+            fatalError()
+        case .add:
+            self[target, default: 0] += rhs
+        case .mul:
+            self[target, default: 0] *= rhs
+        case .div:
+            self[target, default: 0] /= rhs
+        case .mod:
+            self[target, default: 0] %= rhs
+        case .eql:
+            self[target] = (self[target, default: 0] == rhs) ? 1 : 0
+        }
+    }
+}
+
+func task24_1(_ input: TaskInput) {
+    let ops = input.task24()
+
+    let len = 14
+    var cache = [[T24.State: Int]](repeating: .init(), count: len + 1)
+
+    func solve(state: T24.State, idx: Int = 0, opsIdx: Int = 0) -> Int {
+        if let val = cache[idx][state] {
+            return val
+        }
+
+        let startState = state
+
+        var state = state
+        var opsIdx = opsIdx
+        while opsIdx < ops.count {
+            let op = ops[opsIdx]
+            if case .inp(let v) = op {
+                for val in (1...9).reversed() {
+                    state[v] = val
+                    let nextMax = solve(state: state, idx: idx + 1, opsIdx: opsIdx + 1)
+                    if nextMax != -1 {
+                        let result = (0..<(len - idx)).reduce(1, { (a, _) in a * 10 }) * val + nextMax
+                        cache[idx][startState] = result
+                        return result
+                    }
+                }
+                cache[idx][startState] = -1
+                return -1
+            } else {
+                state.appling(op)
+            }
+            opsIdx += 1
+        }
+        let result = state["z"] == 0 ? 0 : -1
+        cache[idx][startState] = result
+        return result
+    }
+
+    let maxVal = solve(state: ["w": 0, "x": 0, "y": 0, "z": 0])
+    print("T24_1: \(maxVal / 10)")
+}
+
+func task24_2(_ input: TaskInput) {
+    let ops = input.task24()
+
+    let len = 14
+    var cache = [[T24.State: Int]](repeating: .init(), count: len + 1)
+
+    func solve(state: T24.State, idx: Int = 0, opsIdx: Int = 0) -> Int {
+        if let val = cache[idx][state] {
+            return val
+        }
+
+        let startState = state
+
+        var state = state
+        var opsIdx = opsIdx
+        while opsIdx < ops.count {
+            let op = ops[opsIdx]
+            if case .inp(let v) = op {
+                for val in (1...9) {
+                    state[v] = val
+                    let nextMax = solve(state: state, idx: idx + 1, opsIdx: opsIdx + 1)
+                    if nextMax != -1 {
+                        let result = (0..<(len - idx)).reduce(1, { (a, _) in a * 10 }) * val + nextMax
+                        cache[idx][startState] = result
+                        return result
+                    }
+                }
+                cache[idx][startState] = -1
+                return -1
+            } else {
+                state.appling(op)
+            }
+            opsIdx += 1
+        }
+        let result = state["z"] == 0 ? 0 : -1
+        cache[idx][startState] = result
+        return result
+    }
+
+    let maxVal = solve(state: ["w": 0, "x": 0, "y": 0, "z": 0])
+    print("T24_2: \(maxVal / 10)")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -2032,9 +2211,12 @@ for input in inputs {
 //
 //    task22_1(input)
 //    task22_2(input)
+//
+//    task23_1(input)
+//    task23_2(input)
 
-    task23_1(input)
-    task23_2(input)
+    task24_1(input)
+    task24_2(input)
 
     print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
