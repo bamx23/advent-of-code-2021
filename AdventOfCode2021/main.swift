@@ -2042,18 +2042,19 @@ extension T24 {
     }
 
     static func stringify(ops: [Op]) -> String {
-        let prefix = ["{ (inp: Int, d1: inout Int, d2: inout Int, d3: inout Int) -> Void in"]
+        let prefix = ["{ (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in"]
         let postfix = ["},"]
+        let letter = ["w", "x", "y", "z"]
 
         var result = [String]()
         for op in ops {
-            let lhs = "d\(op.lhs)"
+            let lhs = letter[op.lhs]
             let rhs: String
             switch op.rhs {
             case .num(let val):
                 rhs = "\(val)"
             case .var(let idx):
-                rhs = idx == 0 ? "inp" : "d\(idx)"
+                rhs = letter[idx]
             }
             switch op {
             case .inp:
