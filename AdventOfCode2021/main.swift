@@ -1996,7 +1996,6 @@ extension TaskInput {
 
 enum T24 {
     typealias Var = Int
-    typealias State = [Int]
     enum Lit {
         case `var`(Var)
         case num(Int)
@@ -2008,17 +2007,6 @@ enum T24 {
         case div(Var, Lit)
         case mod(Var, Lit)
         case eql(Var, Lit)
-    }
-}
-
-extension T24.Lit {
-    func resolve(_ state: T24.State) -> Int {
-        switch self {
-        case .num(let v):
-            return v
-        case .var(let v):
-            return state[v]
-        }
     }
 }
 
@@ -2038,136 +2026,107 @@ extension T24.Op {
     var rhs: T24.Lit {
         switch self {
         case .inp:
-            fatalError()
+            return .num(0) // noop
         case .add(_, let l), .mul(_, let l), .div(_, let l), .mod(_, let l), .eql(_, let l):
             return l
-        }
-    }
-
-    func canAffect(v: T24.Var) -> Bool {
-        if lhs == v { return true }
-        if case .var(v) = rhs { return true }
-        return false
-    }
-
-    func affects(v: T24.Var) -> Bool {
-        guard canAffect(v: v) else { return false }
-
-        switch self {
-        case .eql(v, .var(v)), .div(v, .var(v)), .mod(v, .var(v)):
-            return false
-
-        case .add(_, .num(0)):
-            return false
-        case .mul(_, .num(0)), .mul(_, .num(1)):
-            return false
-        case .div(_, .num(1)):
-            return false
-
-        case .mod(v, .num(let x)):
-            return (1...9).contains(x)
-        case .eql(v, .num(let x)):
-            return (1...9).contains(x)
-
-        default:
-            return true
-        }
-    }
-}
-
-extension T24.State {
-    mutating func appling(_ op: T24.Op) {
-        let target = op.lhs
-        let rhs = op.rhs.resolve(self)
-
-        switch op {
-        case .inp:
-            // Not here
-            fatalError()
-        case .add:
-            self[target] += rhs
-        case .mul:
-            self[target] *= rhs
-        case .div:
-            self[target] /= rhs
-        case .mod:
-            self[target] %= rhs
-        case .eql:
-            self[target] = (self[target] == rhs) ? 1 : 0
         }
     }
 }
 
 extension T24 {
-    static func process(ops: [Op], digits: [Int], cache: inout [Set<T24.State>]) -> Int {
-        let len = 14
-        var noAffect = [Int: Int]()
+    struct State: Hashable {
+        var idx: Int
+        var d1: Int
+        var d2: Int
+        var d3: Int
+    }
 
-        func solve(state: T24.State, idx: Int = 0, opsIdx: Int = 0) -> Int {
-            guard opsIdx < ops.count else { return state[3] == 0 ? 0 : -1 }
-            let target: T24.Var = 0 // assume inp is always with "w"
-            guard case .inp(target) = ops[opsIdx] else { fatalError() }
+    static func stringify(ops: [Op]) -> String {
+        let prefix = ["{ (inp: Int, d1: inout Int, d2: inout Int, d3: inout Int) -> Void in"]
+        let postfix = ["},"]
 
-            let endOpsIdx = ops.dropFirst(opsIdx + 1).firstIndex { $0.isInp } ?? ops.count
-
-            if cache[opsIdx].contains(state) { return -1 }
-
-            var warmState = state
-            var warmIdx = opsIdx + 1
-            if let nextAffect = noAffect[opsIdx] {
-                for opIdx in warmIdx..<nextAffect {
-                    warmState.appling(ops[opIdx])
-                }
-                warmIdx = nextAffect
-            } else {
-                while warmIdx < endOpsIdx {
-                    let op = ops[warmIdx]
-                    if op.affects(v: target) {
-                        break
-                    } else {
-                        warmState.appling(op)
-                    }
-                    warmIdx += 1
-                }
-                noAffect[opsIdx] = warmIdx
+        var result = [String]()
+        for op in ops {
+            let lhs = "d\(op.lhs)"
+            let rhs: String
+            switch op.rhs {
+            case .num(let val):
+                rhs = "\(val)"
+            case .var(let idx):
+                rhs = idx == 0 ? "inp" : "d\(idx)"
             }
+            switch op {
+            case .inp:
+                result.append(contentsOf: postfix + prefix)
+            case .add:
+                result.append("    \(lhs) += \(rhs)")
+            case .mul:
+                result.append("    \(lhs) *= \(rhs)")
+            case .div:
+                result.append("    \(lhs) /= \(rhs)")
+            case .mod:
+                result.append("    \(lhs) %= \(rhs)")
+            case .eql:
+                result.append("    \(lhs) = (\(lhs) == \(rhs)) ? 1 : 0")
+            }
+        }
+        if result.isEmpty { return "" }
 
-            if cache[warmIdx].contains(warmState) { return -1 }
+        result.removeFirst(1)
+        result.append(contentsOf: postfix)
+        let content = result.map { "    \($0)" }.joined(separator: "\n")
+        return """
+static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = [
+\(content)
+]
+"""
+    }
+
+    static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = []
+
+    static func process(digits: [Int], cache: inout Set<State>) -> String {
+        func solve(state: State) -> String? {
+            guard state.idx < processors.count else { return state.d3 == 0 ? "" : nil }
+
+            if cache.contains(state) { return nil }
 
             let endStates = Dictionary(digits.map { val -> (T24.State, Int) in
-                var state = warmState
-                state[target] = val
-                for nextOpsIdx in warmIdx..<endOpsIdx {
-                    state.appling(ops[nextOpsIdx])
-                }
-                state[target] = 0
+                var state = state
+                processors[state.idx](val, &state.d1, &state.d2, &state.d3)
+                state.idx += 1
                 return (state, val)
             }, uniquingKeysWith: { (a, b) in a })
-                .sorted(by: { digits.firstIndex(of: $0.value)! < digits.firstIndex(of: $1.value)!})
+                .sorted(by: { digits.firstIndex(of: $0.value)! < digits.firstIndex(of: $1.value)! })
 
             for (state, val) in endStates {
-                let result = solve(state: state, idx: idx + 1, opsIdx: endOpsIdx)
-                if result != -1 {
-                    return (0..<(len - idx)).reduce(1, { (a, _) in a * 10 }) * val + result
+                if let result = solve(state: state) {
+                    return "\(val)\(result)"
                 }
             }
 
-            cache[opsIdx].insert(state)
-            cache[warmIdx].insert(warmState)
-            return -1
+            cache.insert(state)
+            return nil
         }
-
-        return solve(state: .init(repeating: 0, count: 4)) / 10
+        return solve(state: .init(idx: 0, d1: 0, d2: 0, d3: 0))!
     }
+    
 }
 
 func task24_1(_ input: TaskInput) {
-    let ops = input.task24()
-    var cache = [Set<T24.State>](repeating: .init(), count: ops.count + 1)
-    let maxVal = T24.process(ops: ops, digits: (1...9).reversed(), cache: &cache)
-    let minVal = T24.process(ops: ops, digits: Array(1...9), cache: &cache)
-    print("T24_1: \(maxVal)")
-    print("T24_2: \(minVal)")
+    guard input.prefix != "sample" else {
+        // No sample
+        return
+    }
+    if T24.processors.count == 0 {
+        let ops = input.task24()
+        print(T24.stringify(ops: ops))
+    } else {
+        var cache = Set<T24.State>()
+        let maxVal = T24.process(digits: (1...9).reversed(), cache: &cache)
+        let minVal = T24.process(digits: Array(1...9), cache: &cache)
+        print("T24_1: \(maxVal)")
+        print("T24_2: \(minVal)")
+    }
 }
 
 func task24_2(_ input: TaskInput) {
