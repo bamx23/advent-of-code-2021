@@ -2083,7 +2083,275 @@ static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = [
 """
     }
 
-    static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = []
+    // Generated
+    static let processors: [(Int, inout Int, inout Int, inout Int) -> Void] = [
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 12
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 4
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 11
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 11
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 13
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 5
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 11
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 11
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 14
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 14
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -10
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 7
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 11
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 11
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -9
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 4
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -3
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 6
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 1
+            x += 13
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 5
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -5
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 9
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -10
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 12
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -4
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 14
+            y *= x
+            z += y
+        },
+        { (w: Int, x: inout Int, y: inout Int, z: inout Int) -> Void in
+            x *= 0
+            x += z
+            x %= 26
+            z /= 26
+            x += -5
+            x = (x == w) ? 1 : 0
+            x = (x == 0) ? 1 : 0
+            y *= 0
+            y += 25
+            y *= x
+            y += 1
+            z *= y
+            y *= 0
+            y += w
+            y += 14
+            y *= x
+            z += y
+        },
+    ]
 
     static func process(digits: [Int], cache: inout Set<State>) -> String {
         func solve(state: State) -> String? {
@@ -2195,77 +2463,77 @@ let inputs = [
 for input in inputs {
     print("Run for \(input.prefix)")
     let start = Date()
-//    task01_1(input)
-//    task01_2(input)
-//
-//    task02_1(input)
-//    task02_2(input)
-//
-//    task03_1(input)
-//    task03_2(input)
-//
-//    task04_1(input)
-//    task04_2(input)
-//
-//    task05_1(input)
-//    task05_2(input)
-//
-//    task06_1(input)
-//    task06_2(input)
-//
-//    task07_1(input)
-//    task07_2(input)
-//
-//    task08_1(input)
-//    task08_2(input)
-//
-//    task09_1(input)
-//    task09_2(input)
-//
-//    task10_1(input)
-//    task10_2(input)
-//
-//    task11_1(input)
-//    task11_2(input)
-//
-//    task12_1(input)
-//    task12_2(input)
-//
-//    task13_1(input)
-//    task13_2(input)
-//
-//    task14_1(input)
-//    task14_2(input)
-//
-//    task15_1(input)
-//    task15_2(input)
-//
-//    task16_1(input)
-//    task16_2(input)
-//
-//    task17_1(input)
-//    task17_2(input)
-//
-//    task18_1(input)
-//    task18_2(input)
-//
-//    task19_1(input)
-//    task19_2(input)
-//
-//    task20_1(input)
-//    task20_2(input)
-//
-//    task21_1(input)
-//    task21_2(input)
-//
-//    task22_1(input)
-//    task22_2(input)
-//
-//    task23_1(input)
-//    task23_2(input)
-//
-//    task24_1(input)
-//    task24_2(input)
+    task01_1(input)
+    task01_2(input)
+
+    task02_1(input)
+    task02_2(input)
+
+    task03_1(input)
+    task03_2(input)
+
+    task04_1(input)
+    task04_2(input)
+
+    task05_1(input)
+    task05_2(input)
+
+    task06_1(input)
+    task06_2(input)
+
+    task07_1(input)
+    task07_2(input)
+
+    task08_1(input)
+    task08_2(input)
+
+    task09_1(input)
+    task09_2(input)
+
+    task10_1(input)
+    task10_2(input)
+
+    task11_1(input)
+    task11_2(input)
+
+    task12_1(input)
+    task12_2(input)
+
+    task13_1(input)
+    task13_2(input)
+
+    task14_1(input)
+    task14_2(input)
+
+    task15_1(input)
+    task15_2(input)
+
+    task16_1(input)
+    task16_2(input)
+
+    task17_1(input)
+    task17_2(input)
+
+    task18_1(input)
+    task18_2(input)
+
+    task19_1(input)
+    task19_2(input)
+
+    task20_1(input)
+    task20_2(input)
+
+    task21_1(input)
+    task21_2(input)
+
+    task22_1(input)
+    task22_2(input)
+
+    task23_1(input)
+    task23_2(input)
+
+    task24_1(input)
+    task24_2(input)
 
     task25_1(input)
     task25_2(input)
