@@ -1957,7 +1957,7 @@ func task23_2(_ input: TaskInput) {
     print("T23_2: \(score)")
 }
 
-// MARK: - Day 23
+// MARK: - Day 24
 
 extension TaskInput {
     private static let wCharIdx = "w".first!.asciiValue!
@@ -2129,6 +2129,62 @@ func task24_2(_ input: TaskInput) {
     // In _1
 }
 
+// MARK: - Day 25
+
+extension TaskInput {
+    func task25() -> [[Int]] {
+        readInput("25").split(separator: "\n").map { l in
+            l.map { c in
+                switch c {
+                case ".":
+                    return 0
+                case ">":
+                    return 1
+                case "v":
+                    return 2
+                default:
+                    fatalError()
+                }
+            }
+        }
+    }
+}
+
+enum T25 {
+}
+
+func task25_1(_ input: TaskInput) {
+    var field = input.task25()
+    let (h, w) = (field.count, field.first!.count)
+    var step = 0
+    var moved = true
+    while moved {
+        moved = false
+        step += 1
+        for (m, dx, dy) in [(1, 1, 0), (2, 0, 1)] {
+            var moves = [(Int, Int, Int, Int)]()
+            for y in 0..<h {
+                for x in 0..<w {
+                    let (nx, ny) = ((x + dx) % w, (y + dy) % h)
+                    if field[y][x] == m && field[ny][nx] == 0 {
+                        moves.append((x, y, nx, ny))
+                    }
+                }
+            }
+            moved = moved || moves.isEmpty == false
+            for (x, y, nx, ny) in moves {
+                (field[y][x], field[ny][nx]) = (field[ny][nx], field[y][x])
+            }
+        }
+//        print(field.map { l in l.map { $0 == 0 ? "." : ($0 == 1 ? ">" : "v") }.joined()}.joined(separator: "\n"))
+    }
+    print("T25_1: \(step)")
+}
+
+func task25_2(_ input: TaskInput) {
+    print("T25_2: Merry Christmas!")
+}
+
 // MARK: - Main
 
 let inputs = [
@@ -2207,9 +2263,12 @@ for input in inputs {
 //
 //    task23_1(input)
 //    task23_2(input)
+//
+//    task24_1(input)
+//    task24_2(input)
 
-    task24_1(input)
-    task24_2(input)
+    task25_1(input)
+    task25_2(input)
 
     print("Time: \(String(format: "%0.4f", -start.timeIntervalSinceNow))")
 }
